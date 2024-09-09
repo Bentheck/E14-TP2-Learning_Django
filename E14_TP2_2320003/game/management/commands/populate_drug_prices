@@ -1,0 +1,26 @@
+import random
+from decimal import Decimal
+from .models import Drug, Zone, DrugPrice
+
+def populate_drug_prices():
+    for drug in Drug.objects.all():
+        for zone in Zone.objects.all():
+            # Calculate buy price with a random multiplier
+            price_multiplier = Decimal(random.uniform(0.5, 1.5))
+            buy_price = drug.base_price * price_multiplier
+            # Calculate sell price based on a markup
+            sell_price = buy_price * Decimal(1.1)
+            
+            # Update or create DrugPrice entries for both buy and sell prices
+            DrugPrice.objects.update_or_create(
+                drug=drug,
+                zone=zone,
+                price_type='buy',
+                defaults={'price': buy_price}
+            )
+            DrugPrice.objects.update_or_create(
+                drug=drug,
+                zone=zone,
+                price_type='sell',
+                defaults={'price': sell_price}
+            )

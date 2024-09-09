@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .table-responsive {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .price-display {
+            min-width: 80px;
+            text-align: right;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Current Zone: {{ zone.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" action="{% url 'change_zone' %}">
+                            <div class="form-group">
+                                <label for="zone_id">Change Zone</label>
+                                <select id="zone_id" name="zone_id" class="form-control">
+                                    {% for z in zones %}
+                                        {% if z.id != zone.id %}
+                                            <option value="{{ z.id }}">
+                                                {{ z.name }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Change Zone</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Player Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Player Money: {{ player_money }}$</p>
+                    </div>
+                </div>
+
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Player Inventory</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Drug</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for drug, quantity in player_inventory.items %}
+                                        <tr>
+                                            <td>{{ drug.name }}</td>
+                                            <td>{{ quantity }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Available Drugs</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Drug</th>
+                                        <th>Stock Available</th>
+                                        <th>Buy</th>
+                                        <th>Sell</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for drug, prices in drugs %}
+                                        <tr>
+                                            <td>{{ drug.name }}</td>
+                                            <td>
+                                                {% with drug_id=drug.id %}
+                                                    {% for item in zone_stock %}
+                                                        {% if item.drug.id == drug_id %}
+                                                            {{ item.stock }}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endwith %}
+                                            </td>
+                                            <td>
+                                                <form method="post" action="{% url 'buy_drug' drug.id %}" class="d-flex align-items-center">
+                                                    {% csrf_token %}
+                                                    <input type="number" name="quantity" min="1" placeholder="Qty" required class="form-control">
+                                                    <button type="submit" class="btn btn-success">Buy</button>
+                                                    <span class="price-display">{{ prices.buy }}$</span>
+                                                </form>
+                                            </td>
+                                            <td>
+                                                <form method="post" action="{% url 'sell_drug' drug.id %}" class="d-flex align-items-center">
+                                                    {% csrf_token %}
+                                                    <input type="number" name="quantity" min="1" placeholder="Qty" required class="form-control">
+                                                    <button type="submit" class="btn btn-danger">Sell</button>
+                                                    <span class="price-display">{{ prices.sell }}$</span>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
